@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a121c">
+<meta name="description" content="BikeSensor TPMS: live tire pressure, temperature, wheel RPM and bicycle speed over Bluetooth LE.">
+<title>BikeSensor — TPMS Dashboard</title>
+<style>
+:root{color-scheme:dark;--bg:#0a121c;--surface:#121e2a;--surface2:#172532;--line:#283a48;--ink:#f2f6f7;--muted:#91a4af;--teal:#9bf2bb;--teal2:#64dba1;--blue:#80c6f8;--orange:#ffca83;--red:#ff858b;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-height:100vh;background:radial-gradient(ellipse 90% 350px at 50% -135px,#1b3740 0%,transparent 85%),var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}button,input,select{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid var(--teal2);outline-offset:2px}button:disabled{opacity:.45;cursor:not-allowed}a{color:var(--teal)}.wrap{max-width:1100px;margin:0 auto;padding:0 18px calc(60px + env(safe-area-inset-bottom))}
+.site-header{display:flex;justify-content:space-between;align-items:center;padding:24px 0 21px;gap:16px}.brand{display:flex;align-items:center;gap:11px;min-width:0}.mark{height:40px;width:40px;border:2px solid var(--teal);border-radius:13px;display:grid;place-items:center;flex:none;box-shadow:inset 0 0 17px #9bf2bb15}.mark svg{width:25px;height:25px;stroke:var(--teal)}.brand-name{font-size:18px;font-weight:800;letter-spacing:-.5px}.brand-sub{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--muted);margin-top:4px}.conn-pill{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:11px;letter-spacing:.7px;font-weight:700;color:var(--muted);border:1px solid var(--line);padding:10px 12px;border-radius:99px;white-space:nowrap}.led{height:8px;width:8px;border-radius:100%;background:#617686;flex:none}.conn-pill[data-mode="live"] .led{background:var(--teal);box-shadow:0 0 0 5px #9bf2bb13,0 0 12px #9bf2bb65}.conn-pill[data-mode="reconnecting"] .led,.conn-pill[data-mode="stale"] .led{background:var(--orange)}.conn-pill[data-mode="demo"] .led{background:var(--orange)}.conn-pill[data-mode="error"] .led{background:var(--red)}
+.headline{display:flex;align-items:flex-end;justify-content:space-between;gap:15px;margin:15px 0 21px}.eyebrow{color:var(--teal);font:700 11px var(--mono);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}.headline h1{font-size:clamp(31px,5vw,46px);line-height:1.03;letter-spacing:-1.8px;margin:0}.headline p{margin:9px 0 0;color:var(--muted);font-size:14px;line-height:1.6}.wheel-label{padding:11px 15px;background:var(--surface2);border:1px solid var(--line);border-radius:12px;white-space:nowrap;font:600 12px var(--mono);color:#d8e5e8}
+.panel{background:linear-gradient(145deg,#15232e 0%,#101c28 100%);border:1px solid var(--line);border-radius:19px;padding:19px}.connection{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px}.connection p{margin:5px 0 0;font-size:12px;color:var(--muted);line-height:1.5}.connection .ctitle{font-size:14px;font-weight:700}.btnrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.btn{border:1px solid transparent;padding:12px 15px;border-radius:11px;font-size:13px;font-weight:750;white-space:nowrap;min-height:43px}.btn.primary{background:var(--teal);color:#0a201c}.btn.ghost{background:#21313d;color:#e7f0ee;border-color:#324654}.btn.tiny{padding:9px 12px;min-height:35px;font-size:12px}.btn.wide{width:100%}.btn.warn{color:#1c1712;background:var(--orange)}.feedback{font-size:12px;color:var(--muted);margin:0 0 17px;padding:0 3px;line-height:1.6;min-height:16px}.feedback.alert{color:var(--orange)}
+.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.metric{position:relative;overflow:hidden;min-height:230px;padding:24px 25px}.metric.major{min-height:261px}.metric:after{content:"";position:absolute;inset:auto -50px -110px auto;width:250px;height:230px;background:radial-gradient(circle,#9bf2bb0e 0,transparent 63%);pointer-events:none}.metric.speed:after{background:radial-gradient(circle,#80c6f80b 0,transparent 63%)}.metric-top{display:flex;align-items:center;justify-content:space-between;gap:12px}.metric-name{font:700 12px var(--mono);letter-spacing:1.6px;text-transform:uppercase;color:var(--muted)}.live-tag{font:600 10px var(--mono);color:var(--muted);border:1px solid var(--line);padding:6px 9px;border-radius:99px}.reading{display:flex;align-items:baseline;gap:10px;margin:25px 0 5px;white-space:nowrap;min-width:0}.reading-number{font-size:clamp(52px,7vw,91px);font-weight:760;letter-spacing:-5px;line-height:1;font-variant-numeric:tabular-nums;overflow:hidden;text-overflow:ellipsis}.reading-unit{font:600 16px var(--mono);color:var(--muted)}.metric.pressure .reading-number{color:var(--teal)}.metric.speed .reading-number{color:#f6fbfd}.metric-sub{font-size:13px;color:var(--muted);line-height:1.6;margin-top:13px;position:relative}.accentline{height:3px;width:52px;background:var(--teal);border-radius:50px;margin-top:24px}.metric.speed .accentline{background:var(--blue)}.minor{min-height:165px}.minor .reading{margin:19px 0 7px}.minor .reading-number{font-size:clamp(39px,5vw,59px);letter-spacing:-2.8px}.minor .reading-unit{font-size:14px}.minor .metric-sub{margin-top:6px}.meter-hint{font-size:12px;color:var(--muted);margin:15px 0 0;line-height:1.5}.temp .reading-number{color:#f6e8ce}.rpm .reading-number{color:var(--blue)}
+.alert-strip{display:none;padding:12px 16px;border-radius:12px;border:1px solid #845845;background:#473124;color:#ffe2be;margin:13px 0;font-size:13px;line-height:1.5}.alert-strip.show{display:block}.alert-strip.high{background:#3e2530;border-color:#855360;color:#ffe2e0}
+.section-title{display:flex;align-items:center;justify-content:space-between;margin:24px 1px 12px;gap:12px}.section-title h2{margin:0;font-size:18px;letter-spacing:-.4px}.section-title span{color:var(--muted);font:11px var(--mono)}
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.chart-panel{padding:15px 17px}.chart-header{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:650;margin:1px 0 10px}.chart-header em{font:normal 11px var(--mono);color:var(--muted)}canvas{display:block;width:100%;height:150px}.status-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}.status-cell{padding:15px 17px}.status-cell small{display:block;font:600 11px var(--mono);letter-spacing:.5px;color:var(--muted);margin-bottom:9px}.status-cell strong{font:700 19px var(--mono);color:var(--ink)}.status-cell small.second{margin-top:8px;margin-bottom:0;font:400 10px var(--mono)}
+.details-panel{margin-top:13px;padding:0;overflow:hidden}.settings-head{list-style:none;cursor:pointer;display:flex;gap:12px;align-items:center;justify-content:space-between;padding:20px 22px;font-weight:750;font-size:15px}.settings-head::-webkit-details-marker{display:none}.settings-head::after{content:'+';font-size:22px;font-weight:350;color:var(--muted)}details[open] .settings-head::after{content:'−'}.settings-body{border-top:1px solid var(--line);padding:20px 21px 23px}.setting-section{margin-bottom:23px}.setting-section:last-child{margin-bottom:0}.setting-section h3{margin:0 0 5px;font-size:14px}.setting-section p{font-size:12px;color:var(--muted);line-height:1.55;margin:4px 0 14px}.field-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.field{min-width:0}.field label{display:block;color:#c9d8dc;font-size:12px;margin:0 0 6px}.field input,.field select{display:block;width:100%;background:#0d1925;color:#f3f7f7;border:1px solid #384d5c;padding:11px 12px;min-height:44px;border-radius:10px;font:600 15px var(--mono);appearance:none}.field input::placeholder{color:#566c7a;font-size:13px}.field input:focus,.field select:focus{border-color:var(--teal)}.settings-note{padding:13px;border-radius:11px;background:#101f2a;border:1px solid var(--line);color:#c1d6d9;font-size:12px;line-height:1.6;margin-top:13px}.setting-buttons{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.setting-buttons .btn{white-space:normal}.strong-data{font-family:var(--mono);color:var(--teal);font-weight:650}
+.recording{display:flex;align-items:center;gap:12px;justify-content:space-between;margin-top:13px;flex-wrap:wrap}.recording .logline{font:12px var(--mono);color:var(--muted)}.footer{color:#8197a5;font-size:12px;line-height:1.7;margin:22px 2px 0}.footer strong{color:#dce8e8}.hidden{display:none!important}.demo-ribbon{display:none;background:#433524;border:1px solid #85673b;color:#fcdca6;border-radius:12px;padding:10px 15px;font-size:12px;margin-bottom:12px}.demo-ribbon.visible{display:block}.health{color:var(--teal)!important}.health-warn{color:var(--orange)!important}.health-bad{color:var(--red)!important}
+@media(max-width:740px){.metric.major{min-height:225px}.metric{padding:20px}.reading-number{font-size:clamp(49px,10vw,77px)}.chart-grid{grid-template-columns:1fr}.connection{flex-direction:column;align-items:stretch}.btnrow .btn{flex:1}.wheel-label{display:none}.status-grid{gap:8px}.status-cell{padding:12px}.status-cell strong{font-size:15px}}
+@media(max-width:540px){.site-header{padding:18px 0}.wrap{padding:0 13px calc(55px + env(safe-area-inset-bottom))}.brand-name{font-size:16px}.brand-sub{font-size:9px}.conn-pill{font-size:10px;padding:9px}.headline{margin-top:12px}.headline h1{font-size:35px}.headline p{font-size:12px}.metric-grid{gap:10px}.metric.major{min-height:211px;grid-column:span 2}.metric{padding:19px;border-radius:16px}.metric.major .reading-number{font-size:clamp(66px,14vw,91px)}.minor{min-height:163px}.minor .metric-name{font-size:10px;letter-spacing:1px}.minor .reading-number{font-size:39px;letter-spacing:-2px}.minor .reading-unit{font-size:12px}.minor .reading{gap:5px}.minor .metric-sub{font-size:11px}.field-grid{grid-template-columns:1fr}.section-title h2{font-size:17px}.settings-body{padding:18px 15px}.settings-head{padding:17px}.meter-hint{margin:9px 0}.status-cell strong{font-size:14px}.recording .btnrow{width:100%}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+ <header class="site-header">
+  <div class="brand"><div class="mark" aria-hidden="true"><svg viewBox="0 0 26 26" fill="none" stroke-width="2.2" stroke-linecap="round"><circle cx="13" cy="13" r="9"/><circle cx="13" cy="13" r="3"/><path d="M13 4v6M22 13h-6M13 22v-6M4 13h6"/></svg></div><div><div class="brand-name">BikeSensor</div><div class="brand-sub">TIRE TELEMETRY / v1.0</div></div></div>
+  <div class="conn-pill" id="connPill" data-mode="off"><span class="led"></span><span id="connState">OFFLINE</span></div>
+ </header>
+ <div class="headline"><div><div class="eyebrow">Real-time TPMS dashboard</div><h1>Ride with clarity.</h1><p>Pressure, temperature, and every revolution—at a glance.</p></div><span class="wheel-label" id="wheelBadge">FRONT WHEEL</span></div>
+ <section class="panel connection" aria-label="Bluetooth connection">
+  <div><div class="ctitle" id="deviceLabel">No sensor connected</div><p id="connectionHelp">Open this HTTPS site in Bluefy on your iPhone to connect over Bluetooth.</p></div>
+  <div class="btnrow"><button class="btn primary" id="connectBtn">Connect sensor</button><button class="btn ghost hidden" id="disconnectBtn">Disconnect</button><button class="btn ghost" id="demoBtn">Try demo</button></div>
+ </section>
+ <div class="feedback" id="feedback" role="status" aria-live="polite">Compatible with your existing BikeSensor BLE service.</div>
+ <div class="demo-ribbon" id="demoRibbon">DEMO MODE — Values are simulated. No real sensor is connected.</div>
+ <main>
+ <div class="metric-grid">
+  <section class="panel metric major pressure" id="pressureCard" aria-label="Tire pressure"><div class="metric-top"><span class="metric-name">Tire pressure</span><span class="live-tag" id="pTag">NO DATA</span></div><div class="reading"><span class="reading-number" id="pressureVal">—</span><span class="reading-unit" id="pressureUnit">psi</span></div><div class="metric-sub" id="pressureSub">Set ambient pressure to display gauge pressure.</div><div class="accentline"></div></section>
+  <section class="panel metric major speed" aria-label="Road speed"><div class="metric-top"><span class="metric-name">Road speed</span><span class="live-tag" id="sTag">NO RPM</span></div><div class="reading"><span class="reading-number" id="speedVal">—</span><span class="reading-unit" id="speedUnit">km/h</span></div><div class="metric-sub" id="speedSub">Calculated from wheel RPM × circumference.</div><div class="accentline"></div></section>
+  <section class="panel metric minor temp" aria-label="Tire temperature"><div class="metric-top"><span class="metric-name">Temperature</span><span class="live-tag" id="tTag">NO DATA</span></div><div class="reading"><span class="reading-number" id="tempVal">—</span><span class="reading-unit" id="tempUnit">°C</span></div><div class="metric-sub">Sensor-measured temperature</div></section>
+  <section class="panel metric minor rpm" aria-label="Wheel RPM"><div class="metric-top"><span class="metric-name">Wheel rotation</span><span class="live-tag" id="rTag">NO DATA</span></div><div class="reading"><span class="reading-number" id="rpmVal">—</span><span class="reading-unit">rpm</span></div><div class="metric-sub" id="rpmSub">Awaiting rotation telemetry</div></section>
+ </div>
+ <p class="meter-hint" id="gaugeHint">The MS5837 reports absolute pressure. Gauge pressure requires an ambient reference; speed requires RPM notifications from the firmware.</p>
+ <div class="alert-strip" id="alertStrip" role="alert"></div>
+ <div class="section-title"><h2>Sensor health</h2><span id="lastSeen">NO LIVE DATA</span></div>
+ <div class="status-grid">
+  <div class="panel status-cell"><small>BATTERY</small><strong id="batteryVal">—</strong><small class="second" id="batteryHint">If transmitted</small></div>
+  <div class="panel status-cell"><small>PRESSURE FEED</small><strong id="pressureHealth">Waiting</strong><small class="second" id="pressureAge">—</small></div>
+  <div class="panel status-cell"><small>ROTATION FEED</small><strong id="rpmHealth">Waiting</strong><small class="second" id="rpmAge">—</small></div>
+ </div>
+ <div class="section-title"><h2>Live trends</h2><span>LAST 2 MINUTES</span></div>
+ <div class="chart-grid">
+  <section class="panel chart-panel"><div class="chart-header">Gauge pressure <em id="chartPressureUnit">PSI</em></div><canvas id="pressureChart" role="img" aria-label="Graph of tire gauge pressure over the last two minutes"></canvas></section>
+  <section class="panel chart-panel"><div class="chart-header">Road speed <em id="chartSpeedUnit">KM/H</em></div><canvas id="speedChart" role="img" aria-label="Graph of road speed over the last two minutes"></canvas></section>
+ </div>
+ <details class="panel details-panel" id="settings"><summary class="settings-head"><span>Wheel, units &amp; alert settings</span></summary><div class="settings-body">
+  <div class="setting-section"><h3>Wheel configuration</h3><p>Speed is calculated from measured wheel RPM and the tire's actual rolling circumference. A measured rollout is more accurate than nominal tire size.</p><div class="field-grid">
+   <div class="field"><label for="wheelPosition">Sensor position</label><select id="wheelPosition"><option value="front">Front wheel</option><option value="rear">Rear wheel</option></select></div>
+   <div class="field"><label for="wheelDiameter">Wheel outside diameter (mm)</label><input id="wheelDiameter" type="number" min="250" max="1100" step="1" inputmode="decimal" value="700"></div>
+   <div class="field"><label for="rollout">Measured wheel rollout (mm, optional)</label><input id="rollout" type="number" min="500" max="3500" step="1" inputmode="decimal" placeholder="Overrides diameter"></div>
+   <div class="field"><label for="speedUnits">Speed unit</label><select id="speedUnits"><option value="kmh">km/h</option><option value="mph">mph</option></select></div>
+  </div><div class="settings-note">Effective circumference: <span class="strong-data" id="circValue">2,199 mm</span> <span id="circMode">(from diameter)</span>. To measure rollout, mark a point on the tire, roll exactly one revolution with rider weight on the bike, then measure the ground distance.</div></div>
+  <div class="setting-section"><h3>Pressure &amp; temperature</h3><p>The MS5837-30BA sends <strong>absolute</strong> mbar. Enter ambient atmospheric pressure to display tire gauge pressure. Don't zero a sensor that's already in a pressurized tire. Recheck the ambient reference after significant altitude or weather changes.</p><div class="field-grid">
+   <div class="field"><label for="ambientInput">Ambient pressure (mbar absolute)</label><input id="ambientInput" type="number" min="300" max="1200" step="0.1" inputmode="decimal" placeholder="e.g. 823.5 in Kunming"></div>
+   <div class="field"><label for="pressureUnits">Gauge pressure unit</label><select id="pressureUnits"><option value="psi">psi</option><option value="bar">bar</option><option value="kpa">kPa</option></select></div>
+   <div class="field"><label for="tempUnits">Temperature unit</label><select id="tempUnits"><option value="c">°C</option><option value="f">°F</option></select></div>
+  </div><div class="setting-buttons"><button class="btn ghost tiny" id="useAmbientBtn" disabled>Use current reading as ambient</button><button class="btn ghost tiny" id="clearAmbientBtn">Clear ambient reference</button></div><div class="settings-note" id="ambientNote">No ambient reference set. Gauge pressure unavailable.</div></div>
+  <div class="setting-section"><h3>Optional tire-pressure alerts</h3><p>Enter your own limits based on your tire, rim, rider and load. Alerts are visual only while this page is running; they are not a substitute for a dedicated safety system.</p><div class="field-grid"><div class="field"><label for="lowPsi">Low alert threshold (psi)</label><input id="lowPsi" type="number" min="0" max="300" step="0.5" inputmode="decimal" placeholder="Off"></div><div class="field"><label for="highPsi">High alert threshold (psi)</label><input id="highPsi" type="number" min="0" max="300" step="0.5" inputmode="decimal" placeholder="Off"></div></div></div>
+ </div></details>
+ <section class="panel recording"><div><div style="font-size:14px;font-weight:700">Ride log</div><div class="logline" id="recordCount" style="margin-top:6px">0 samples recorded • current session</div></div><div class="btnrow"><button class="btn ghost" id="recordBtn">Start recording</button><button class="btn ghost" id="exportBtn" disabled>Export CSV</button><button class="btn ghost" id="clearBtn">Clear charts</button></div></section>
+ <p class="footer"><strong>BLE protocol:</strong> Your existing firmware sends <code>P:823.5 T:23.70</code> for absolute pressure and temperature. The experimental firmware sends <code>R:120.5</code> (estimated RPM) as a separate notification when the LIS2DW12 is connected. RPM may be unreliable if the radial axis is overloaded. Optional battery: <code>B:87</code>. No RPM is inferred from raw accelerometer data. Automatic reconnect retries operate while this page stays open in the foreground; manual Disconnect cancels retries. Reconnect after a page reload requires tapping Connect again. Old readings are hidden when stale.</p>
+ </main>
+</div>
+<script>
+'use strict';
+/* BikeSensor BLE UUIDs retained from your working nRF54L15 firmware. */
+const SERVICE_UUID='12345678-1234-5678-1234-56789abcdef0';
+const DATA_UUID='12345678-1234-5678-1234-56789abcdef1';
+const $=id=>document.getElementById(id);
+const PSI_PER_MBAR=0.0145037738;
+const MAX_HISTORY_SECONDS=120;
+const STORAGE_KEY='bikesensor-tpms-v1';
+const DEFAULT_SETTINGS={wheelPosition:'front',wheelDiameter:'700',rollout:'',speedUnits:'kmh',ambientInput:'',pressureUnits:'psi',tempUnits:'c',lowPsi:'',highPsi:''};
+const CONFIG_FIELDS=Object.keys(DEFAULT_SETTINGS);
+let device=null,characteristic=null,connecting=false,mode='off',demoTimer=null,recording=false;
+let allowAutoReconnect=false,reconnectTimer=null,reconnectAttempts=0,connectedAt=0,linkStaleAnnounced=false;
+let state={pAbs:null,tempC:null,rpm:null,battery:null,pTime:0,tTime:0,rTime:0,bTime:0,lastTime:0,packets:0};
+let pressureHistory=[],speedHistory=[],recordRows=[];
+function nowSec(){return Date.now()/1000;}
+function fmtAge(t){if(!t)return 'No packets yet';const age=Math.max(0,Math.floor(nowSec()-t));return age<1?'Updated just now':`Updated ${age}s ago`;}
+function settings(){const s={};for(const k of CONFIG_FIELDS)s[k]=$(k).value;return s;}
+function saveSettings(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(settings()));}catch(_){} }
+function restoreSettings(){let saved={};try{saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}')||{};}catch(_){}for(const [k,v] of Object.entries(DEFAULT_SETTINGS))$(k).value=typeof saved[k]==='string'?saved[k]:v;}
+function positive(value,min,max){const n=Number(value);return value!==''&&Number.isFinite(n)&&n>=min&&n<=max?n:null;}
+function getCircumference(){const rollout=positive($('rollout').value,500,3500);if(rollout!==null)return rollout;const diameter=positive($('wheelDiameter').value,250,1100);return diameter===null?null:Math.PI*diameter;}
+function getAmbient(){const manual=positive($('ambientInput').value,300,1200);return manual!==null?manual:(mode==='demo'?1013.25:null);}
+function psiGauge(){const amb=getAmbient();return state.pAbs!==null&&amb!==null?(state.pAbs-amb)*PSI_PER_MBAR:null;}
+function speedKmh(){const circumference=getCircumference();return state.rpm!==null&&circumference!==null?state.rpm*circumference*60/1000000:null;}
+function speedDisplay(kmh){return kmh===null?null:($('speedUnits').value==='mph'?kmh*0.621371192:kmh);}
+function pressureDisplay(psi){if(psi===null)return null;switch($('pressureUnits').value){case 'bar':return psi/14.5037738;case 'kpa':return psi*6.8947573;default:return psi;}}
+function displayUnit(){return $('pressureUnits').value==='kpa'?'kPa':$('pressureUnits').value;}
+function fmtNumber(n,digits){return Number.isFinite(n)?n.toFixed(digits):'—';}
+function fresh(t){return t&&nowSec()-t<=5;}
+function liveReading(t){return mode==='demo'||(mode==='live'&&fresh(t));}
+function setMode(next){
+ mode=next;$('connPill').dataset.mode=next;
+ $('connState').textContent=({off:'OFFLINE',live:'CONNECTED',demo:'DEMO MODE',busy:'CONNECTING',reconnecting:'RECONNECTING',stale:'NO DATA',error:'ERROR'})[next]||'OFFLINE';
+ $('connectBtn').disabled=next==='live'||next==='busy';
+ $('connectBtn').textContent=next==='reconnecting'?'Retry now':'Connect sensor';
+ $('disconnectBtn').classList.toggle('hidden',next!=='live'&&next!=='reconnecting');
+ $('demoBtn').textContent=next==='demo'?'Stop demo':'Try demo';
+ $('demoRibbon').classList.toggle('visible',next==='demo');
+}
+function setFeedback(message,warning=false){$('feedback').textContent=message;$('feedback').classList.toggle('alert',warning);}
+function resetData(){state={pAbs:null,tempC:null,rpm:null,battery:null,pTime:0,tTime:0,rTime:0,bTime:0,lastTime:0,packets:0};pressureHistory=[];speedHistory=[];render();}
+function stopReconnectTimer(){if(reconnectTimer!==null){clearTimeout(reconnectTimer);reconnectTimer=null;}}
+function scheduleReconnect(detail='Bluetooth connection lost'){
+ if(!allowAutoReconnect||!device||mode==='demo')return;
+ stopReconnectTimer();setMode('reconnecting');
+ const delay=Math.min(15000,1000*Math.pow(2,Math.min(reconnectAttempts,4)));
+ $('deviceLabel').textContent=(device.name||'BikeSensor')+' · reconnecting';
+ $('connectionHelp').textContent='Reconnect uses your previously selected sensor.';
+ setFeedback(`${detail}. Retrying in ${Math.round(delay/1000)}s; keep Bluefy open.`,true);
+ reconnectTimer=setTimeout(()=>{
+  reconnectTimer=null;
+  if(!allowAutoReconnect||!device)return;
+  if(document.visibilityState==='hidden'){
+   setFeedback('Reconnect paused while Bluefy is in the background; return to the page.',true);
+   return;
+  }
+  void connectSelectedDevice(true);
+ },delay);
+ render();
+}
+function handleDisconnected(evt){
+ if(!device||evt.target!==device)return;
+ if(characteristic){characteristic.removeEventListener('characteristicvaluechanged',onBLE);characteristic=null;}
+ if(!allowAutoReconnect||mode==='demo')return;
+ scheduleReconnect('Bluetooth disconnected');
+}
+async function connectSelectedDevice(retrying=false){
+ if(connecting||!allowAutoReconnect||!device)return;
+ connecting=true;stopReconnectTimer();setMode(retrying?'reconnecting':'busy');
+ try{
+  const server=await device.gatt.connect();
+  if(!allowAutoReconnect){server.disconnect();return;}
+  const service=await server.getPrimaryService(SERVICE_UUID);
+  const nextCharacteristic=await service.getCharacteristic(DATA_UUID);
+  nextCharacteristic.addEventListener('characteristicvaluechanged',onBLE);
+  try{await nextCharacteristic.startNotifications();}
+  catch(error){nextCharacteristic.removeEventListener('characteristicvaluechanged',onBLE);throw error;}
+  if(!allowAutoReconnect){device?.gatt?.disconnect();return;}
+  characteristic=nextCharacteristic;reconnectAttempts=0;connectedAt=nowSec();linkStaleAnnounced=false;
+  setMode('live');$('deviceLabel').textContent=device.name||'BikeSensor';
+  $('connectionHelp').textContent='BLE connected · notifications subscribed';
+  setFeedback(retrying?'Reconnected. Waiting for fresh sensor readings.':'Connected. Waiting for sensor readings.');
+  try{handleDataValue(await characteristic.readValue());}catch(_){}
+ }catch(error){
+  characteristic=null;
+  if(allowAutoReconnect&&device){
+   reconnectAttempts++;
+   scheduleReconnect(`Unable to connect (${error.message||String(error)})`);
+  }else if(mode!=='demo'){
+   setMode('off');setFeedback('Connection cancelled.');
+  }
+ }finally{connecting=false;render();}
+}
+async function connect(){
+ if(connecting)return;
+ if(!navigator.bluetooth){setFeedback('Web Bluetooth unavailable. Open the HTTPS site in Bluefy on your iPhone.',true);return;}
+ stopDemo();
+ if(allowAutoReconnect&&device){stopReconnectTimer();void connectSelectedDevice(true);return;}
+ connecting=true;setMode('busy');setFeedback('Choose BikeSensor in the Bluetooth device picker…');
+ try{
+  const picked=await navigator.bluetooth.requestDevice({filters:[{namePrefix:'BikeSensor'}],optionalServices:[SERVICE_UUID]});
+  device=picked;device.addEventListener('gattserverdisconnected',handleDisconnected);
+  allowAutoReconnect=true;reconnectAttempts=0;resetData();
+ }catch(error){
+  setMode('off');setFeedback(`Device not selected: ${error.message||String(error)}`,true);
+ }finally{connecting=false;}
+ if(allowAutoReconnect&&device)void connectSelectedDevice(false);
+}
+function disconnect(){
+ allowAutoReconnect=false;stopReconnectTimer();reconnectAttempts=0;
+ if(characteristic){characteristic.removeEventListener('characteristicvaluechanged',onBLE);characteristic=null;}
+ const old=device;device=null;
+ if(old?.gatt?.connected)old.gatt.disconnect();
+ if(mode!=='demo'){
+  setMode('off');$('deviceLabel').textContent='No sensor connected';
+  $('connectionHelp').textContent='Disconnected manually. Tap Connect to select a sensor.';
+  setFeedback('Disconnected manually. Automatic reconnection is off.');
+ }
+ render();
+}
+function stopDemo(){if(demoTimer){clearInterval(demoTimer);demoTimer=null;}if(mode==='demo'){setMode('off');resetData();setFeedback('Demo stopped. Connect your physical sensor to receive real readings.');}}
+let demoStart=0;
+function toggleDemo(){if(mode==='demo'){stopDemo();return;}disconnect();stopDemo();resetData();setMode('demo');demoStart=nowSec();$('deviceLabel').textContent='Simulated bike sensor';$('connectionHelp').textContent='Interface preview • no physical BLE device';setFeedback('Demo mode: simulated readings only.');demoTick();demoTimer=setInterval(demoTick,1000);}
+function demoTick(){if(mode!=='demo')return;const t=nowSec()-demoStart;const rpm=Math.max(0,110+35*Math.sin(t/8)+6*Math.sin(t/2));const gauge=55+1.6*Math.sin(t/15)+0.12*Math.sin(t*2.2);const p=1013.25+gauge/PSI_PER_MBAR;updatePressure(p,24+1.2*Math.sin(t/30));updateRPM(rpm);updateBattery(87);state.lastTime=nowSec();state.packets++;refresh();}
+function onBLE(evt){handleDataValue(evt.target.value);}
+function handleDataValue(value){
+ if(!value)return;
+ const bytes=new Uint8Array(value.buffer,value.byteOffset,value.byteLength);
+ const packet=new TextDecoder().decode(bytes).replace(/\0/g,'').trim();
+ ingestPacket(packet);
+}
+function getField(packet,names){
+ for(const name of names){const esc=name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');const re=new RegExp('(?:^|[\\s,;])'+esc+'\\s*:\\s*(-?\\d+(?:\\.\\d+)?)','i');const hit=packet.match(re);if(hit){const x=Number(hit[1]);if(Number.isFinite(x))return x;}}
+ return null;
+}
+function ingestPacket(packet){
+ if(!packet)return;
+ const p=getField(packet,['P','Pressure']);const t=getField(packet,['T','Temperature']);const rpm=getField(packet,['RPM','R']);const bat=getField(packet,['BAT','Battery','B']);
+ let recognized=false;
+ if(p!==null&&p>=0&&p<=30000){updatePressure(p,t);recognized=true;}
+ else if(t!==null&&t>-100&&t<200){state.tempC=t;state.tTime=nowSec();recognized=true;appendLog('temperature',packet);}
+ if(rpm!==null&&rpm>=0&&rpm<10000){updateRPM(rpm);recognized=true;}
+ if(bat!==null&&bat>=0&&bat<=100){updateBattery(bat);recognized=true;}
+ // Existing X/Y/Z accelerometer notifications remain valid but do not
+ // provide trustworthy RPM without an explicit firmware algorithm.
+ if(!recognized&&/^X:\s*-?\d+/i.test(packet)){recognized=true;}
+ if(recognized){state.lastTime=nowSec();state.packets++;if(linkStaleAnnounced&&mode==='live'){linkStaleAnnounced=false;setFeedback('Sensor data resumed.');}else if(state.packets===1)setFeedback('Receiving BikeSensor data. RPM and battery appear when the firmware transmits them.');render();}
+ else{setFeedback('Connected, but unrecognized packet: '+packet.slice(0,100),true);}
+}
+function prune(points){const cutoff=nowSec()-MAX_HISTORY_SECONDS-4;while(points.length&&points[0].time<cutoff)points.shift();if(points.length>900)points.splice(0,points.length-900);}
+function updatePressure(pAbs,tempC){state.pAbs=pAbs;state.pTime=nowSec();if(tempC!==null&&tempC!==undefined&&Number.isFinite(tempC)){state.tempC=tempC;state.tTime=state.pTime;}pressureHistory.push({time:state.pTime,absolute:pAbs});prune(pressureHistory);appendLog('pressure_temperature',`P:${pAbs} T:${tempC??''}`);render();}
+function updateRPM(rpm){state.rpm=rpm;state.rTime=nowSec();speedHistory.push({time:state.rTime,rpm});prune(speedHistory);appendLog('rotation',`R:${rpm}`);render();}
+function updateBattery(bat){state.battery=bat;state.bTime=nowSec();render();}
+function appendLog(type,packet){if(!recording)return;recordRows.push({time:new Date().toISOString(),source:mode,type,packet,pressure_mbar_abs:state.pAbs,temperature_c:state.tempC,rpm:state.rpm,speed_kmh:speedKmh(),wheel_circumference_mm:getCircumference(),ambient_mbar:getAmbient(),gauge_psi:psiGauge(),battery_percent:state.battery});$('recordCount').textContent=`${recordRows.length} samples recorded • current session`;}
+function readableValue(value,decimals){return value===null?'—':fmtNumber(value,decimals);}
+function render(){
+ const s=settings(),circ=getCircumference(),amb=getAmbient(),gauge=psiGauge(),spd=speedDisplay(speedKmh());
+ $('wheelBadge').textContent=s.wheelPosition.toUpperCase()+' WHEEL';$('pressureUnit').textContent=displayUnit();$('speedUnit').textContent=s.speedUnits==='mph'?'mph':'km/h';$('tempUnit').textContent=s.tempUnits==='f'?'°F':'°C';
+ $('pressureVal').textContent=readableValue(liveReading(state.pTime)?pressureDisplay(gauge):null,s.pressureUnits==='bar'?2:1);
+ $('pressureSub').textContent=state.pAbs===null?'Awaiting pressure sensor data':`${state.pAbs.toFixed(1)} mbar absolute${amb!==null?` · ambient ${amb.toFixed(1)} mbar`:' · ambient reference needed'}`;
+ $('tempVal').textContent=readableValue(liveReading(state.tTime)&&state.tempC!==null?(s.tempUnits==='f'?state.tempC*9/5+32:state.tempC):null,1);
+ $('rpmVal').textContent=readableValue(liveReading(state.rTime)?state.rpm:null,1);$('speedVal').textContent=readableValue(liveReading(state.rTime)?spd:null,1);
+ $('rpmSub').textContent=state.rpm===null?'Awaiting R:… or RPM:… packet':'Reported by wheel sensor';
+ $('speedSub').textContent=circ===null?'Enter a valid wheel diameter or rollout':`Calculated using ${Math.round(circ).toLocaleString()} mm circumference`;
+ $('pTag').textContent=mode==='demo'?'DEMO':state.pTime?(liveReading(state.pTime)?'LIVE':'STALE'):'NO DATA';$('tTag').textContent=mode==='demo'?'DEMO':state.tTime?(liveReading(state.tTime)?'LIVE':'STALE'):'NO DATA';$('rTag').textContent=mode==='demo'?'DEMO':state.rTime?(liveReading(state.rTime)?'LIVE':'STALE'):'NO RPM';$('sTag').textContent=mode==='demo'?'DEMO':state.rTime?(liveReading(state.rTime)?'LIVE':'STALE'):'NO RPM';
+ $('gaugeHint').textContent=amb===null?'Set ambient pressure in Settings to calculate gauge pressure.':state.rpm===null?'RPM and road speed appear once firmware sends R:… notifications.':'Gauge pressure = absolute pressure − ambient pressure. Road speed = RPM × wheel circumference.';
+ $('pressureHealth').textContent=state.pTime?(liveReading(state.pTime)?'Live':'Stale'):'Waiting';$('pressureHealth').className=state.pTime?(fresh(state.pTime)?'health':'health-warn'):'';
+ $('rpmHealth').textContent=state.rTime?(liveReading(state.rTime)?'Live':'Stale'):'Waiting';$('rpmHealth').className=state.rTime?(fresh(state.rTime)?'health':'health-warn'):'';
+ $('pressureAge').textContent=fmtAge(state.pTime);$('rpmAge').textContent=fmtAge(state.rTime);
+ $('batteryVal').textContent=state.battery===null?'—':`${Math.round(state.battery)}%`;
+ $('batteryHint').textContent=state.battery===null?'Firmware must send B:87':fmtAge(state.bTime);
+ $('lastSeen').textContent=mode==='demo'?'SIMULATED DATA':state.lastTime?fmtAge(state.lastTime).toUpperCase():'NO LIVE DATA';
+ $('circValue').textContent=circ===null?'Invalid dimension':`${Math.round(circ).toLocaleString()} mm`;
+ $('circMode').textContent=positive(s.rollout,500,3500)!==null?'(measured rollout)':'(from diameter)';
+ $('ambientNote').textContent=amb===null?'No ambient reference set. Gauge tire pressure is unavailable.':`Gauge pressure subtracts ${amb.toFixed(1)} mbar from the MS5837 absolute reading.${mode==='demo'&&s.ambientInput===''?' (demo-only reference)':''}`;
+ $('useAmbientBtn').disabled=state.pAbs===null||!liveReading(state.pTime)||mode!=='live';
+ $('chartPressureUnit').textContent=displayUnit().toUpperCase();$('chartSpeedUnit').textContent=s.speedUnits==='mph'?'MPH':'KM/H';
+ const lo=positive(s.lowPsi,0,300),hi=positive(s.highPsi,0,300),alerts=[];
+ if(gauge!==null&&mode!=='off'&&mode!=='error'&&liveReading(state.pTime)){
+   if(lo!==null&&gauge<lo)alerts.push(`LOW PRESSURE: ${gauge.toFixed(1)} psi, below your ${lo} psi threshold`);
+   if(hi!==null&&gauge>hi)alerts.push(`HIGH PRESSURE: ${gauge.toFixed(1)} psi, above your ${hi} psi threshold`);
+ }
+ $('alertStrip').classList.toggle('show',alerts.length>0);$('alertStrip').classList.toggle('high',alerts.some(x=>x.startsWith('HIGH')));$('alertStrip').textContent=alerts.join(' · ');
+}
+function drawChart(canvas,series,stroke,unit,transform){
+ const context=canvas.getContext('2d');if(!context)return;
+ const w=Math.max(1,canvas.clientWidth),h=Math.max(1,canvas.clientHeight),dpr=Math.min(2,window.devicePixelRatio||1);
+ if(canvas.width!==Math.round(w*dpr)||canvas.height!==Math.round(h*dpr)){canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);}context.setTransform(dpr,0,0,dpr,0,0);context.clearRect(0,0,w,h);
+ const L=43,R=13,T=13,B=25,plotW=Math.max(1,w-L-R),plotH=Math.max(1,h-T-B),cutoff=nowSec()-MAX_HISTORY_SECONDS;
+ const data=series.filter(x=>x.time>=cutoff).map(x=>({x:x.time,y:transform(x)})).filter(x=>Number.isFinite(x.y));
+ let low=0,high=10;
+ if(data.length){low=Math.min(...data.map(x=>x.y));high=Math.max(...data.map(x=>x.y));const pad=Math.max((high-low)*.22,unit==='rpm'?1:.4);low-=pad;high+=pad;}
+ if(high-low<1e-6)high=low+1;
+ context.font='10px '+getComputedStyle(document.body).fontFamily;context.textAlign='right';context.textBaseline='middle';
+ for(let i=0;i<=3;i++){const y=T+plotH*(i/3),v=high-(high-low)*i/3;context.strokeStyle='#304250';context.lineWidth=1;context.beginPath();context.moveTo(L,y);context.lineTo(w-R,y);context.stroke();context.fillStyle='#91a4af';context.fillText(Math.abs(v)>=100?v.toFixed(0):v.toFixed(1),L-7,y);}
+ context.fillStyle='#8299a6';context.textAlign='left';context.textBaseline='bottom';context.fillText('−120s',L,h-3);context.textAlign='right';context.fillText('now',w-R,h-3);
+ if(!data.length){context.textAlign='center';context.textBaseline='middle';context.font='12px -apple-system, sans-serif';context.fillStyle='#8ca1ad';context.fillText('Waiting for live samples',w/2,h/2);return;}
+ const mapX=t=>L+(t-cutoff)/MAX_HISTORY_SECONDS*plotW;const mapY=v=>T+(high-v)/(high-low)*plotH;
+ context.beginPath();for(let i=0;i<data.length;i++){const x=Math.max(L,Math.min(w-R,mapX(data[i].x))),y=mapY(data[i].y);if(i===0)context.moveTo(x,y);else context.lineTo(x,y);}
+ context.lineWidth=2.3;context.strokeStyle=stroke;context.lineJoin='round';context.lineCap='round';context.stroke();
+ const last=data[data.length-1];context.fillStyle=stroke;context.beginPath();context.arc(Math.max(L,Math.min(w-R,mapX(last.x))),mapY(last.y),3.6,0,2*Math.PI);context.fill();
+}
+function refreshCharts(){drawChart($('pressureChart'),pressureHistory,'#9bf2bb','pressure',point=>{const amb=getAmbient();if(amb===null)return NaN;return pressureDisplay((point.absolute-amb)*PSI_PER_MBAR);});drawChart($('speedChart'),speedHistory,'#80c6f8','speed',point=>{const circ=getCircumference();return circ===null?NaN:speedDisplay(point.rpm*circ*60/1e6);});}
+function refresh(){
+ if(mode==='live'){
+  const delayed=nowSec()-(state.lastTime||connectedAt)>8;
+  $('connPill').dataset.mode=delayed?'stale':'live';
+  $('connState').textContent=delayed?'NO DATA':'CONNECTED';
+  if(delayed&&!linkStaleAnnounced){
+   linkStaleAnnounced=true;
+   setFeedback('Bluetooth is connected, but no sensor packets have arrived for 8+ seconds. Readings are hidden until they resume.',true);
+  }
+ }
+ render();refreshCharts();
+}
+function recordToggle(){recording=!recording;$('recordBtn').textContent=recording?'Stop recording':'Start recording';$('recordBtn').classList.toggle('warn',recording);$('exportBtn').disabled=recordRows.length===0;}
+function csvCell(x){if(x===null||x===undefined)return '';const str=String(x);return /[",\r\n]/.test(str)?'"'+str.replace(/"/g,'""')+'"':str;}
+function exportCSV(){if(!recordRows.length)return;const columns=['time','source','type','packet','pressure_mbar_abs','temperature_c','rpm','speed_kmh','wheel_circumference_mm','ambient_mbar','gauge_psi','battery_percent'];const csv=[columns.join(','),...recordRows.map(row=>columns.map(key=>csvCell(row[key])).join(','))].join('\r\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`bikesensor_${new Date().toISOString().replace(/[:.]/g,'-')}.csv`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);}
+function clearCharts(){pressureHistory=[];speedHistory=[];refreshCharts();setFeedback('Trend graphs cleared.');}
+function useLiveAmbient(){if(state.pAbs===null)return;if(!window.confirm('Only do this while the pressure sensor is exposed to ambient air, not inside a tire. Use the current absolute pressure as the ambient reference?'))return;$('ambientInput').value=state.pAbs.toFixed(1);saveSettings();refresh();}
+function clearAmbient(){$('ambientInput').value='';saveSettings();refresh();}
+$('connectBtn').addEventListener('click',connect);$('disconnectBtn').addEventListener('click',disconnect);$('demoBtn').addEventListener('click',toggleDemo);
+$('recordBtn').addEventListener('click',recordToggle);$('exportBtn').addEventListener('click',exportCSV);$('clearBtn').addEventListener('click',clearCharts);
+$('useAmbientBtn').addEventListener('click',useLiveAmbient);$('clearAmbientBtn').addEventListener('click',clearAmbient);
+for(const k of CONFIG_FIELDS){$(k).addEventListener('input',()=>{saveSettings();refresh();});$(k).addEventListener('change',()=>{saveSettings();refresh();});}
+document.addEventListener('visibilitychange',()=>{
+ if(document.visibilityState==='visible'&&allowAutoReconnect&&device&&!connecting&&!device.gatt?.connected){
+  scheduleReconnect('Bluefy returned to foreground');
+ }
+});
+restoreSettings();setMode('off');refresh();setInterval(refresh,1000);
+if(!navigator.bluetooth)setFeedback('Open this HTTPS page in Bluefy on iPhone for BLE. Safari can display the dashboard but cannot connect directly.',true);
+</script>
+</body>
+</html>
